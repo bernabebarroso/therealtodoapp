@@ -9,6 +9,7 @@ export default function Home() {
     name: "",
     status: false,
   });
+  let [selectedCompletedTasks, setSelectedCompletedTasks] = useState([]);
 
   {
     /* Este handler tiene la función de actualizar el estado 'notes', agregando una nueva nota ('newNote') al arreglo.
@@ -52,20 +53,6 @@ name de newnote. */
   };
 
   {
-    /* Este handler tiene como funcion actualizar el estado de las notas a partir de un checkbox. Cuando el usuario interactua con el
-checkbox de una determinada tarea, se llama a esta función con el noteId correspondiente, permitiendo actualizar el 'status' de la tarea
-marcandolo o desmarcandolo. */
-  }
-
-  const completedNote = (noteId) => {
-    setNotes((prevNotes) =>
-      prevNotes.map((note) =>
-        note.id === noteId ? { ...note, status: !note.status } : note
-      )
-    );
-  };
-
-  {
     /* Handler que nos permite marcar como completadas todas las notas. */
   }
 
@@ -76,14 +63,6 @@ marcandolo o desmarcandolo. */
         status: true,
       }))
     );
-  };
-
-  {
-    /* Handler que permite que una vez completdas todas las tareas, eliminarlas a todas juntas y no una por una */
-  }
-
-  const deleteCompletedNotes = (noteId) => {
-    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
   };
 
   {
@@ -98,13 +77,6 @@ un nuevo arreglo que reemplaza al arreglo anterior que tenia la tarea que acabam
   };
 
   {
-    /* Dos funciones cuya utilidad es hacer un conteo de la cantidad de tareas y de todas las tareas que ya fueron completadas. */
-  }
-
-  const totalTasks = notes.length;
-  const allCompletedTasks = notes.filter((note) => note.status).length;
-
-  {
     /* Creacion de una variable con utilizacion del metodo sort para ordenar las tareas que estan completadas por debajo de la lista general. */
   }
 
@@ -112,6 +84,31 @@ un nuevo arreglo que reemplaza al arreglo anterior que tenia la tarea que acabam
     const sortedNotes = [...notes];
     sortedNotes.sort((a, b) => (a.status === b.status ? 0 : a.status ? 1 : -1));
     return sortedNotes;
+  };
+
+  {
+    /* Handler mas completo, que permite seleccionar las tareas que han sido completadas y permite eliminar al mismo tiempo todas las
+tareas que han sido seleccionadas. */
+  }
+
+  const handleCompletedTasks = (noteId) => {
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note.id === noteId ? { ...note, status: !note.status } : note
+      )
+    );
+    setSelectedCompletedTasks((prevIds) =>
+      prevIds.includes(noteId)
+        ? prevIds.filter((id) => id !== noteId)
+        : [...prevIds, noteId]
+    );
+  };
+
+  const deleteCompletedTasks = () => {
+    setNotes((prevNotes) =>
+      prevNotes.filter((note) => !selectedCompletedTasks.includes(note.id))
+    );
+    setSelectedCompletedTasks([]);
   };
 
   return (
@@ -133,21 +130,18 @@ un nuevo arreglo que reemplaza al arreglo anterior que tenia la tarea que acabam
           <input
             type="checkbox"
             checked={note.status}
-            onChange={() => completedNote(note.id)}
+            onChange={() => handleCompletedTasks(note.id)}
           />
           <button onClick={() => deleteNote(note.id)}>Eliminar Tarea</button>
         </li>
       ))}
-      <div className="">
-        <span>Total tasks: {totalTasks}</span>
-        <span>Completed tasks: {allCompletedTasks}</span>
-      </div>
+
       <div>
         <h3>
           Marcar como 'completas' todas las tareas. Y si deseas, eliminarlas
         </h3>
         <button onClick={completedAllNotes}>Finalizar Tareas</button>
-        <button onClick={deleteCompletedNotes}>Eliminar Tareas</button>
+        <button onClick={deleteCompletedTasks}>Eliminar Tareas</button>
         <button onClick={() => setNotes(orderByStatus(notes))}>
           Ordenar Tareas
         </button>
