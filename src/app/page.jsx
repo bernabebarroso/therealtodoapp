@@ -9,6 +9,8 @@ export default function Home() {
     name: "",
     status: false,
   });
+  let [editTask, setEditTask] = useState(null);
+  let [editedTaskContent, setEditedTaskContent] = useState("");
   let [selectedCompletedTasks, setSelectedCompletedTasks] = useState([]);
 
   {
@@ -97,9 +99,9 @@ tareas que han sido seleccionadas. */
         note.id === noteId ? { ...note, status: !note.status } : note
       )
     );
-    setSelectedCompletedTasks((prevIds) =>
-      prevIds.includes(noteId)
-        ? prevIds.filter((id) => id !== noteId)
+    setSelectedCompletedTasks((prevTasks) =>
+      prevTasks.includes(noteId)
+        ? prevTasks.filter((id) => id !== noteId)
         : [...prevIds, noteId]
     );
   };
@@ -109,6 +111,25 @@ tareas que han sido seleccionadas. */
       prevNotes.filter((note) => !selectedCompletedTasks.includes(note.id))
     );
     setSelectedCompletedTasks([]);
+  };
+
+  const handleEditTask = (noteId) => {
+    const taskToEdit = notes.find((note) => note.id === noteId);
+    setEditTask(noteId);
+    setEditedTaskContent(taskToEdit.name);
+  };
+
+  const updateTask = (noteId) => {
+    const updatedTasks = notes.map((note) =>
+      note.id === noteId ? { ...note, name: editedTaskContent } : note
+    );
+    setNotes(updatedTasks);
+    setEditTask(null);
+  };
+
+  const cancelUpdateTask = () => {
+    setEditTask(null);
+    setEditedTaskContent("");
   };
 
   return (
@@ -126,13 +147,32 @@ tareas que han sido seleccionadas. */
       </form>
       {notes.map((note) => (
         <li key={note.id}>
-          {note.name}
-          <input
-            type="checkbox"
-            checked={note.status}
-            onChange={() => handleCompletedTasks(note.id)}
-          />
-          <button onClick={() => deleteNote(note.id)}>Eliminar Tarea</button>
+          {editTask === note.id ? (
+            <>
+              <input
+                type="text"
+                value={editedTaskContent}
+                onChange={(e) => setEditedTaskContent(e.target.value)}
+              />
+              <button onClick={() => updateTask(note.id)}>Actualizar</button>
+              <button onClick={cancelUpdateTask}>Cancelar</button>
+            </>
+          ) : (
+            <>
+              {note.name}
+              <input
+                type="checkbox"
+                checked={note.status}
+                onChange={() => handleCompletedTasks(note.id)}
+              />
+              <button onClick={() => deleteNote(note.id)}>
+                Eliminar Tarea
+              </button>
+              <button onClick={() => handleEditTask(note.id)}>
+                Editar Tarea
+              </button>
+            </>
+          )}
         </li>
       ))}
 
